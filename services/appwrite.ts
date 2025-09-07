@@ -12,10 +12,10 @@ export const login = async () => {
     await account.get();
   } catch (e) {
     // Not logged in
-    await account.createEmailPasswordSession(
-      "daniel@baymax.com",
-      "12341234test"
-    );
+    await account.createEmailPasswordSession({
+      email: "daniel@baymax.com",
+      password: "12341234test"
+    });
   }
 };
 
@@ -34,10 +34,10 @@ export interface ITask {
 // 2. Get list of tasks
 export async function getTasks(): Promise<ITask[]> {
   try {
-    const response = await tableDB.listRows(
-      process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
-      "tasks"
-    );
+    const response = await tableDB.listRows({
+      databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
+      tableId: "tasks"
+    });
 
     const tasks: ITask[] = response.rows.map((row) => ({
       $id: row.$id, 
@@ -56,5 +56,21 @@ export async function getTasks(): Promise<ITask[]> {
   } catch (err) {
     console.error("Failed to fetch tasks:", err);
     return [];
+  }
+}
+
+// 3. Update task completion status
+export async function updateTask(taskId: string, isCompleted: boolean): Promise<boolean> {
+  try {
+    await tableDB.updateRow({
+      databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
+      tableId: "tasks",
+      rowId: taskId,
+      data: { isCompleted }
+    });
+    return true;
+  } catch (err) {
+    console.error("Failed to update task:", err);
+    return false;
   }
 }

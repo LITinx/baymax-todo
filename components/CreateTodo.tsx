@@ -6,13 +6,19 @@ import { useState } from 'react';
 const CreateTodo = () => {
     const [todo, setTodo] = useState('');
     return (
-        <View className="pb-safe">
-            <Text>{todo}</Text>
-            <TextInput className="p-4 border-b border-black rounded-full"
-                       placeholder="What do you want to do today?"
-                       value={todo}
-                       onChangeText={setTodo}
-                       onSubmitEditing={() => setTodo('')}/>
+        <View className="px-4 pb-4">
+            <View className="bg-white/90 rounded-xl p-4 shadow-lg shadow-gray-300/50 border border-gray-100/50">
+                <TextInput 
+                    className="text-lg text-gray-800"
+                    placeholder="What do you want to do today?"
+                    placeholderTextColor="#9CA3AF"
+                    value={todo}
+                    onChangeText={setTodo}
+                    onSubmitEditing={() => setTodo('')}
+                    multiline
+                    textAlignVertical="top"
+                />
+            </View>
         </View>
     );
 };

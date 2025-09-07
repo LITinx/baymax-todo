@@ -10,6 +10,14 @@ export default function Today() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const handleTodoToggle = (taskId: string, isCompleted: boolean) => {
+    setTodos(prevTodos => 
+      prevTodos.map(todo => 
+        todo.$id === taskId ? { ...todo, isCompleted } : todo
+      )
+    );
+  };
+
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -53,16 +61,26 @@ export default function Today() {
   }
 
   return (
-    <SafeAreaView>
+    <SafeAreaView className="flex-1 bg-gray-50">
       <KeyboardAvoidingView
         behavior="padding"
-        className="p-4 flex justify-between h-full"
+        className="flex justify-between h-full"
       >
         <View>
+          <View className="px-4 py-6">
+            <Text className="text-3xl font-bold text-gray-800">Today</Text>
+          </View>
           <FlatList
             data={todos}
-            renderItem={({ item }) => <TodoItem todo={item} />}
+            renderItem={({ item }) => (
+              <TodoItem 
+                todo={item} 
+                onToggle={handleTodoToggle}
+              />
+            )}
             keyExtractor={(item) => item.$id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingVertical: 8 }}
           />
         </View>
         <CreateTodo></CreateTodo>
