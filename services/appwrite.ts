@@ -1,4 +1,4 @@
-import { Account, Client, TablesDB } from "react-native-appwrite";
+import { Account, Client, ID, TablesDB } from "react-native-appwrite";
 
 const client = new Client()
   .setEndpoint(process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!)
@@ -30,6 +30,7 @@ export interface ITask {
   title: string;
   description: string;
   isCompleted: boolean;
+  dueDate?: string;
 }
 // 2. Get list of tasks
 export async function getTasks(): Promise<ITask[]> {
@@ -50,6 +51,7 @@ export async function getTasks(): Promise<ITask[]> {
       title: row.title,
       description: row.description,
       isCompleted: row.isCompleted,
+      dueDate: row.dueDate,
     }));
 
     return tasks;
@@ -59,7 +61,45 @@ export async function getTasks(): Promise<ITask[]> {
   }
 }
 
-// 3. Update task completion status
+// 3. Create a new task
+export async function createTask(params: {
+  title: string;
+  description?: string;
+  dueDate?: string;
+}): Promise<ITask | null> {
+  try {
+    const response = await tableDB.createRow({
+      databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
+      tableId: "tasks",
+      rowId: ID.unique(),
+      data: {
+        title: params.title,
+        description: params.description || "",
+        isCompleted: false,
+        dueDate: params.dueDate || null,
+      }
+    });
+
+    return {
+      $id: response.$id,
+      $createdAt: response.$createdAt,
+      $updatedAt: response.$updatedAt,
+      $databaseId: response.$databaseId,
+      $permissions: response.$permissions,
+      $sequence: response.$sequence,
+      $tableId: response.$tableId,
+      title: response.title,
+      description: response.description,
+      isCompleted: response.isCompleted,
+      dueDate: response.dueDate,
+    };
+  } catch (err) {
+    console.error("Failed to create task:", err);
+    return null;
+  }
+}
+
+// 4. Update task completion status
 export async function updateTask(taskId: string, isCompleted: boolean): Promise<boolean> {
   try {
     await tableDB.updateRow({

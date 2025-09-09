@@ -18,6 +18,26 @@ export default function Today() {
     );
   };
 
+  const handleTaskCreate = (newTask: ITask) => {
+    setTodos(prevTodos => [newTask, ...prevTodos]);
+  };
+
+  // Filter to show only today's incomplete tasks
+  const todaysIncompleteTodos = todos.filter(todo => {
+    if (todo.isCompleted) return false;
+    
+    if (!todo.dueDate) return false;
+    
+    const taskDate = new Date(todo.dueDate);
+    const today = new Date();
+    
+    // Reset time for comparison
+    taskDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    return taskDate.getTime() === today.getTime();
+  });
+
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -64,14 +84,14 @@ export default function Today() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <KeyboardAvoidingView
         behavior="padding"
-        className="flex justify-between h-full"
+        className="flex-1"
       >
-        <View>
+        <View className="flex-1">
           <View className="px-4 py-6">
             <Text className="text-3xl font-bold text-gray-800">Today</Text>
           </View>
           <FlatList
-            data={todos}
+            data={todaysIncompleteTodos}
             renderItem={({ item }) => (
               <TodoItem 
                 todo={item} 
@@ -81,9 +101,10 @@ export default function Today() {
             keyExtractor={(item) => item.$id}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingVertical: 8 }}
+            className="flex-1"
           />
         </View>
-        <CreateTodo></CreateTodo>
+        <CreateTodo onTaskCreate={handleTaskCreate} />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
