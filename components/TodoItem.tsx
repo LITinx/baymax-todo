@@ -1,4 +1,5 @@
 import { ITask, updateTask } from '@/services/appwrite';
+import * as Haptics from 'expo-haptics';
 import React, { useState } from 'react';
 import { Animated, Text, TouchableOpacity, View } from 'react-native';
 
@@ -14,6 +15,7 @@ const TodoItem = ({ todo, onToggle }: TodoItemProps) => {
   const [opacityAnimation] = useState(new Animated.Value(1));
   
   const handleToggle = async () => {
+    await Haptics.performAndroidHapticsAsync(Haptics.AndroidHaptics.Gesture_Start)
     // Start completion animation if completing task
     if (!todo.isCompleted) {
       // Scale bounce effect

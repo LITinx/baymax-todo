@@ -1,25 +1,25 @@
 import React from 'react';
 
-import {Alert, Text, TextInput, View} from 'react-native';
-import { useState } from 'react';
 import { createTask, ITask } from '@/services/appwrite';
+import { useState } from 'react';
+import { Alert, TextInput, View } from 'react-native';
 
 interface CreateTodoProps {
     onTaskCreate?: (task: ITask) => void;
 }
 
 const CreateTodo = ({ onTaskCreate }: CreateTodoProps) => {
+
     const [todo, setTodo] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     
     const handleSubmit = async () => {
         if (!todo.trim() || isCreating) return;
-        
         setIsCreating(true);
         try {
             const newTask = await createTask({ 
                 title: todo.trim(),
-                dueDate: new Date().toISOString().split('T')[0] // Default to today
+                dueDate: new Date().toLocaleDateString('en-CA')// Default to today
             });
             
             if (newTask && onTaskCreate) {

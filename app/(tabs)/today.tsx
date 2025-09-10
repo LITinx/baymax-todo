@@ -1,4 +1,5 @@
 import CreateTodo from "@/components/CreateTodo";
+import { useTasksStore } from "@/services/store";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -6,24 +7,25 @@ import TodoItem from "../../components/TodoItem";
 import { getTasks, ITask } from "../../services/appwrite";
 
 export default function Today() {
-  const [todos, setTodos] = useState<ITask[]>([]);
+  const tasks = useTasksStore(state => state.tasks)
+  const updateTasks = useTasksStore(state => state.updateTasks)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const handleTodoToggle = (taskId: string, isCompleted: boolean) => {
-    setTodos(prevTodos => 
-      prevTodos.map(todo => 
+    updateTasks(
+      tasks.map(todo => 
         todo.$id === taskId ? { ...todo, isCompleted } : todo
-      )
-    );
+      ))
   };
 
   const handleTaskCreate = (newTask: ITask) => {
-    setTodos(prevTodos => [newTask, ...prevTodos]);
+    console.log(newTask)
+    updateTasks([newTask, ...tasks]);
   };
 
   // Filter to show only today's incomplete tasks
-  const todaysIncompleteTodos = todos.filter(todo => {
+  const todaysIncompleteTodos = tasks.filter(todo => {
     if (todo.isCompleted) return false;
     
     if (!todo.dueDate) return false;
@@ -44,9 +46,9 @@ export default function Today() {
         setLoading(true);
         const response = await getTasks();
         if (response) {
-          setTodos(response);
+          updateTasks(response);
         } else if (Array.isArray(response)) {
-          setTodos(response);
+          updateTasks(response);
         } else {
           console.warn(
             "Unexpected response structure from getTasks:",

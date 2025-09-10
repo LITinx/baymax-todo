@@ -1,30 +1,31 @@
 import CreateTodo from "@/components/CreateTodo";
+import { useTasksStore } from "@/services/store";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TodoItem from "../../components/TodoItem";
 import { getTasks, ITask } from "../../services/appwrite";
 
 export default function Index() {
-  const [todos, setTodos] = useState<ITask[]>([]);
+  const tasks = useTasksStore(state => state.tasks)
+  const updateTasks = useTasksStore(state => state.updateTasks)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const handleTodoToggle = (taskId: string, isCompleted: boolean) => {
-    setTodos(prevTodos => 
-      prevTodos.map(todo => 
+    updateTasks(
+      tasks.map(todo => 
         todo.$id === taskId ? { ...todo, isCompleted } : todo
-      )
-    );
+      ))
   };
 
   const handleTaskCreate = (newTask: ITask) => {
-    setTodos(prevTodos => [newTask, ...prevTodos]);
+    updateTasks([newTask, ...tasks]);
   };
 
   // Separate completed and incomplete tasks
-  const incompleteTasks = todos.filter(todo => !todo.isCompleted);
-  const completedTasks = todos.filter(todo => todo.isCompleted);
+  const incompleteTasks = tasks.filter(todo => !todo.isCompleted);
+  const completedTasks = tasks.filter(todo => todo.isCompleted);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -32,9 +33,9 @@ export default function Index() {
         setLoading(true);
         const response = await getTasks();
         if (response) {
-          setTodos(response);
+          updateTasks(response);
         } else if (Array.isArray(response)) {
-          setTodos(response);
+          updateTasks(response);
         } else {
           console.warn(
             "Unexpected response structure from getTasks:",
