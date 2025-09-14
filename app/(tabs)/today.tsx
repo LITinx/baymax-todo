@@ -20,7 +20,6 @@ export default function Today() {
   };
 
   const handleTaskCreate = (newTask: ITask) => {
-    console.log(newTask)
     updateTasks([newTask, ...tasks]);
   };
 
@@ -29,14 +28,13 @@ export default function Today() {
     if (todo.isCompleted) return false;
     
     if (!todo.dueDate) return false;
-    
+
     const taskDate = new Date(todo.dueDate);
     const today = new Date();
     
     // Reset time for comparison
     taskDate.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
-    
     return taskDate.getTime() === today.getTime();
   });
 

@@ -1,7 +1,7 @@
+import { Tabs } from "expo-router";
+import { CalendarCheck, HomeIcon } from "lucide-react-native";
 import React from 'react';
-import {Tabs} from "expo-router";
-import {Text, View} from "react-native";
-import {CalendarCheck, HomeIcon} from "lucide-react-native";
+import { Text, View } from "react-native";
 
 interface TabBarIconProps {
     focused: boolean;
@@ -36,8 +36,6 @@ const _Layout = () => {
                 },
                 tabBarStyle: {
                     paddingTop: 15,
-                    borderTopLeftRadius: 50,
-                    borderTopRightRadius: 50,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

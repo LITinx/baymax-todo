@@ -1,4 +1,4 @@
-import { Account, Client, ID, TablesDB } from "react-native-appwrite";
+import { Account, Client, ID, Query, TablesDB } from "react-native-appwrite";
 
 const client = new Client()
   .setEndpoint(process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!)
@@ -37,7 +37,8 @@ export async function getTasks(): Promise<ITask[]> {
   try {
     const response = await tableDB.listRows({
       databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
-      tableId: "tasks"
+      tableId: "tasks",
+      queries: [Query.limit(100), Query.offset(0)]
     });
 
     const tasks: ITask[] = response.rows.map((row) => ({
@@ -114,3 +115,5 @@ export async function updateTask(taskId: string, isCompleted: boolean): Promise<
     return false;
   }
 }
+
+

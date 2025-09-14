@@ -24,7 +24,19 @@ export default function Index() {
   };
 
   // Separate completed and incomplete tasks
-  const incompleteTasks = tasks.filter(todo => !todo.isCompleted);
+  const inboxIncompleteTasks = tasks.filter(todo => {
+    if (todo.isCompleted) return false;
+    
+    if (!todo.dueDate) return true;
+
+    const taskDate = new Date(todo.dueDate);
+    const today = new Date();
+    
+    // Reset time for comparison
+    taskDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return taskDate.getTime() !== today.getTime();
+  });
   const completedTasks = tasks.filter(todo => todo.isCompleted);
 
   useEffect(() => {
@@ -84,10 +96,10 @@ export default function Index() {
           <View className="mb-6">
             <View className="px-4 mb-4">
               <Text className="text-xl font-semibold text-gray-700">Inbox</Text>
-              <Text className="text-sm text-gray-500">{incompleteTasks.length} tasks</Text>
+              <Text className="text-sm text-gray-500">{inboxIncompleteTasks.length} tasks</Text>
             </View>
-            {incompleteTasks.length > 0 ? (
-              incompleteTasks.map((item) => (
+            {inboxIncompleteTasks.length > 0 ? (
+              inboxIncompleteTasks.map((item) => (
                 <TodoItem 
                   key={item.$id}
                   todo={item} 

@@ -105,7 +105,6 @@ const TodoItem = ({ todo, onToggle }: TodoItemProps) => {
   };
 
   const dueDateText = formatDueDate(todo.dueDate);
-  const isOverdue = todo.dueDate && new Date(todo.dueDate) < new Date() && !todo.isCompleted;
 
   const animatedBackgroundColor = backgroundAnimation.interpolate({
     inputRange: [0, 1],
@@ -131,7 +130,7 @@ const TodoItem = ({ todo, onToggle }: TodoItemProps) => {
             style={{
               backgroundColor: animatedBackgroundColor,
             }}
-            className="rounded-xl p-4 shadow-lg shadow-gray-300/50 border border-gray-100/50"
+            className="rounded-md p-4 shadow-lg shadow-gray-400/50 border border-gray-200"
           >
         <View className="flex items-center justify-between flex-row gap-3">
           <View className="flex-1">
@@ -162,7 +161,7 @@ const TodoItem = ({ todo, onToggle }: TodoItemProps) => {
                 className={`text-xs mt-1 font-medium ${
                   todo.isCompleted 
                     ? 'text-gray-400 line-through'
-                    : isOverdue 
+                    : dueDateText === 'Overdue' 
                       ? 'text-red-500' 
                       : dueDateText === 'Today'
                         ? 'text-blue-500'
