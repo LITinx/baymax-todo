@@ -1,7 +1,7 @@
 import CreateTodo from "@/components/CreateTodo";
 import { useTasksStore } from "@/services/store";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TodoItem from "../../components/TodoItem";
 import { getTasks, ITask } from "../../services/appwrite";
@@ -81,29 +81,32 @@ export default function Today() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-blue-50">
       <KeyboardAvoidingView
         behavior="padding"
         className="flex-1"
       >
-        <View className="flex-1">
-          <View className="px-4 py-6">
-            <Text className="text-3xl font-bold text-gray-800">Today</Text>
-          </View>
-          <FlatList
-            data={todaysIncompleteTodos}
-            renderItem={({ item }) => (
-              <TodoItem 
-                todo={item} 
-                onToggle={handleTodoToggle}
-              />
-            )}
-            keyExtractor={(item) => item.$id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingVertical: 8 }}
-            className="flex-1"
-          />
+        {/* Header */}
+        <View className="px-4 py-6">
+          <Text className="text-3xl font-bold text-gray-800">Today</Text>
         </View>
+        
+        {/* Scrollable content */}
+        <ScrollView 
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingVertical: 8 }}
+        >
+          {todaysIncompleteTodos.map((item) => (
+            <TodoItem 
+              key={item.$id}
+              todo={item} 
+              onToggle={handleTodoToggle}
+            />
+          ))}
+        </ScrollView>
+        
+        {/* Sticky bottom input */}
         <CreateTodo onTaskCreate={handleTaskCreate} />
       </KeyboardAvoidingView>
     </SafeAreaView>

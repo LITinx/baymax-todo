@@ -2,6 +2,7 @@ import CreateTodo from "@/components/CreateTodo";
 import { useTasksStore } from "@/services/store";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TodoItem from "../../components/TodoItem";
 import { getTasks, ITask } from "../../services/appwrite";
@@ -14,7 +15,7 @@ export default function Index() {
 
   const handleTodoToggle = (taskId: string, isCompleted: boolean) => {
     updateTasks(
-      tasks.map(todo => 
+      tasks.map(todo =>
         todo.$id === taskId ? { ...todo, isCompleted } : todo
       ))
   };
@@ -26,12 +27,12 @@ export default function Index() {
   // Separate completed and incomplete tasks
   const inboxIncompleteTasks = tasks.filter(todo => {
     if (todo.isCompleted) return false;
-    
+
     if (!todo.dueDate) return true;
 
     const taskDate = new Date(todo.dueDate);
     const today = new Date();
-    
+
     // Reset time for comparison
     taskDate.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
@@ -82,16 +83,17 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-blue-50">
       <KeyboardAvoidingView
         behavior="padding"
         className="flex-1"
       >
+
         <ScrollView className="flex-1">
           <View className="px-4 py-6">
             <Text className="text-3xl font-bold text-gray-800">Home</Text>
           </View>
-          
+
           {/* Inbox Section */}
           <View className="mb-6">
             <View className="px-4 mb-4">
@@ -100,9 +102,9 @@ export default function Index() {
             </View>
             {inboxIncompleteTasks.length > 0 ? (
               inboxIncompleteTasks.map((item) => (
-                <TodoItem 
+                <TodoItem
                   key={item.$id}
-                  todo={item} 
+                  todo={item}
                   onToggle={handleTodoToggle}
                 />
               ))
@@ -115,22 +117,23 @@ export default function Index() {
 
           {/* Completed Section */}
           {completedTasks.length > 0 && (
-            <View className="mb-6">
+            <Animated.View
+              layout={LinearTransition.springify()} className="mb-6">
               <View className="px-4 mb-4">
                 <Text className="text-xl font-semibold text-gray-700">Completed</Text>
                 <Text className="text-sm text-gray-500">{completedTasks.length} tasks</Text>
               </View>
               {completedTasks.map((item) => (
-                <TodoItem 
+                <TodoItem
                   key={item.$id}
-                  todo={item} 
+                  todo={item}
                   onToggle={handleTodoToggle}
                 />
               ))}
-            </View>
+            </Animated.View>
           )}
+
         </ScrollView>
-        
         <CreateTodo onTaskCreate={handleTaskCreate} />
       </KeyboardAvoidingView>
     </SafeAreaView>
