@@ -1,23 +1,35 @@
 import CreateTodo from "@/components/CreateTodo";
 import { useTasksStore } from "@/services/store";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LogOut } from "lucide-react-native";
 import TodoItem from "../../components/TodoItem";
 import { getTasks, ITask } from "../../services/appwrite";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Index() {
-  const tasks = useTasksStore(state => state.tasks)
-  const updateTasks = useTasksStore(state => state.updateTasks)
+  const tasks = useTasksStore((state) => state.tasks);
+  const updateTasks = useTasksStore((state) => state.updateTasks);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { logout, user } = useAuth();
 
   const handleTodoToggle = (taskId: string, isCompleted: boolean) => {
     updateTasks(
-      tasks.map(todo =>
-        todo.$id === taskId ? { ...todo, isCompleted } : todo
-      ))
+      tasks.map((todo) =>
+        todo.$id === taskId ? { ...todo, isCompleted } : todo,
+      ),
+    );
   };
 
   const handleTaskCreate = (newTask: ITask) => {
@@ -25,7 +37,7 @@ export default function Index() {
   };
 
   // Separate completed and incomplete tasks
-  const inboxIncompleteTasks = tasks.filter(todo => {
+  const inboxIncompleteTasks = tasks.filter((todo) => {
     if (todo.isCompleted) return false;
 
     if (!todo.dueDate) return true;
@@ -38,7 +50,7 @@ export default function Index() {
     today.setHours(0, 0, 0, 0);
     return taskDate.getTime() !== today.getTime();
   });
-  const completedTasks = tasks.filter(todo => todo.isCompleted);
+  const completedTasks = tasks.filter((todo) => todo.isCompleted);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -52,7 +64,7 @@ export default function Index() {
         } else {
           console.warn(
             "Unexpected response structure from getTasks:",
-            response
+            response,
           );
         }
       } catch (e) {
@@ -65,6 +77,26 @@ export default function Index() {
 
     fetchTasks();
   }, []);
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      {
+        text: "No",
+        style: "cancel",
+      },
+      {
+        text: "Yes",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await logout();
+          } catch (error: any) {
+            Alert.alert("Logout Error", error.message);
+          }
+        },
+      },
+    ]);
+  };
 
   if (loading) {
     return (
@@ -84,21 +116,30 @@ export default function Index() {
 
   return (
     <SafeAreaView className="flex-1 bg-blue-50">
-      <KeyboardAvoidingView
-        behavior="padding"
-        className="flex-1"
-      >
-
+      <KeyboardAvoidingView behavior="padding" className="flex-1">
         <ScrollView className="flex-1">
-          <View className="px-4 py-6">
-            <Text className="text-3xl font-bold text-gray-800">Home</Text>
+          <View className="px-4 py-6 flex-row justify-between items-center">
+            <View>
+              <Text className="text-3xl font-bold text-gray-800">Home</Text>
+              <Text className="text-sm text-gray-600">
+                Welcome, {user?.name}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleLogout}
+              className="p-2 rounded-lg bg-red-50"
+            >
+              <LogOut size={24} color="#dc2626" />
+            </TouchableOpacity>
           </View>
 
           {/* Inbox Section */}
           <View className="mb-6">
             <View className="px-4 mb-4">
               <Text className="text-xl font-semibold text-gray-700">Inbox</Text>
-              <Text className="text-sm text-gray-500">{inboxIncompleteTasks.length} tasks</Text>
+              <Text className="text-sm text-gray-500">
+                {inboxIncompleteTasks.length} tasks
+              </Text>
             </View>
             {inboxIncompleteTasks.length > 0 ? (
               inboxIncompleteTasks.map((item) => (
@@ -110,7 +151,9 @@ export default function Index() {
               ))
             ) : (
               <View className="px-4 py-8">
-                <Text className="text-gray-500 text-center">No pending tasks</Text>
+                <Text className="text-gray-500 text-center">
+                  No pending tasks
+                </Text>
               </View>
             )}
           </View>
@@ -118,10 +161,16 @@ export default function Index() {
           {/* Completed Section */}
           {completedTasks.length > 0 && (
             <Animated.View
-              layout={LinearTransition.springify()} className="mb-6">
+              layout={LinearTransition.springify()}
+              className="mb-6"
+            >
               <View className="px-4 mb-4">
-                <Text className="text-xl font-semibold text-gray-700">Completed</Text>
-                <Text className="text-sm text-gray-500">{completedTasks.length} tasks</Text>
+                <Text className="text-xl font-semibold text-gray-700">
+                  Completed
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  {completedTasks.length} tasks
+                </Text>
               </View>
               {completedTasks.map((item) => (
                 <TodoItem
@@ -132,7 +181,6 @@ export default function Index() {
               ))}
             </Animated.View>
           )}
-
         </ScrollView>
         <CreateTodo onTaskCreate={handleTaskCreate} />
       </KeyboardAvoidingView>

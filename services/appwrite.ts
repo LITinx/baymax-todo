@@ -1,48 +1,44 @@
 import { Account, Client, ID, Query, TablesDB } from "react-native-appwrite";
 
-const client = new Client()
+export const client = new Client()
   .setEndpoint(process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!)
   .setProject(process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!);
 
 const tableDB = new TablesDB(client);
 const account = new Account(client);
 
-export const login = async () => {
-  try {
-    await account.get();
-  } catch (e) {
-    // Not logged in
-    await account.createEmailPasswordSession({
-      email: "daniel@baymax.com",
-      password: "12341234test"
-    });
-  }
-};
-
 export interface ITask {
   $id: string;
   $createdAt: string;
   $updatedAt: string;
-  $sequence: number
-  $databaseId: string
-  $tableId: string
+  $sequence: number;
+  $databaseId: string;
+  $tableId: string;
   $permissions: string[];
   title: string;
   description: string;
   isCompleted: boolean;
   dueDate?: string;
+  userId: string;
 }
-// 2. Get list of tasks
+// 2. Get list of tasks for the current user
 export async function getTasks(): Promise<ITask[]> {
   try {
+    // Get current user to filter tasks
+    const currentUser = await account.get();
+    
     const response = await tableDB.listRows({
       databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
       tableId: "tasks",
-      queries: [Query.limit(100), Query.offset(0)]
+      queries: [
+        Query.equal("userId", currentUser.$id),
+        Query.limit(100),
+        Query.offset(0)
+      ],
     });
 
     const tasks: ITask[] = response.rows.map((row) => ({
-      $id: row.$id, 
+      $id: row.$id,
       $createdAt: row.$createdAt,
       $updatedAt: row.$updatedAt,
       $databaseId: row.$databaseId,
@@ -53,6 +49,7 @@ export async function getTasks(): Promise<ITask[]> {
       description: row.description,
       isCompleted: row.isCompleted,
       dueDate: row.dueDate,
+      userId: row.userId,
     }));
 
     return tasks;
@@ -62,13 +59,16 @@ export async function getTasks(): Promise<ITask[]> {
   }
 }
 
-// 3. Create a new task
+// 3. Create a new task for the current user
 export async function createTask(params: {
   title: string;
   description?: string;
   dueDate?: string;
 }): Promise<ITask | null> {
   try {
+    // Get current user to associate task with them
+    const currentUser = await account.get();
+    
     const response = await tableDB.createRow({
       databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
       tableId: "tasks",
@@ -78,7 +78,8 @@ export async function createTask(params: {
         description: params.description || "",
         isCompleted: false,
         dueDate: params.dueDate || null,
-      }
+        userId: currentUser.$id,
+      },
     });
 
     return {
@@ -93,6 +94,7 @@ export async function createTask(params: {
       description: response.description,
       isCompleted: response.isCompleted,
       dueDate: response.dueDate,
+      userId: response.userId,
     };
   } catch (err) {
     console.error("Failed to create task:", err);
@@ -101,13 +103,16 @@ export async function createTask(params: {
 }
 
 // 4. Update task completion status
-export async function updateTask(taskId: string, isCompleted: boolean): Promise<boolean> {
+export async function updateTask(
+  taskId: string,
+  isCompleted: boolean,
+): Promise<boolean> {
   try {
     await tableDB.updateRow({
       databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
       tableId: "tasks",
       rowId: taskId,
-      data: { isCompleted }
+      data: { isCompleted },
     });
     return true;
   } catch (err) {
@@ -115,5 +120,3 @@ export async function updateTask(taskId: string, isCompleted: boolean): Promise<
     return false;
   }
 }
-
-
