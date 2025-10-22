@@ -13,13 +13,19 @@ import {
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LogOut } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 import TodoItem from "../../components/TodoItem";
+import Toast from "../../components/Toast";
 import { getTasks, ITask } from "../../services/appwrite";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function Index() {
   const tasks = useTasksStore((state) => state.tasks);
   const updateTasks = useTasksStore((state) => state.updateTasks);
+  const scheduleDelete = useTasksStore((state) => state.scheduleDelete);
+  const undoDelete = useTasksStore((state) => state.undoDelete);
+  const hideUndoToast = useTasksStore((state) => state.hideUndoToast);
+  const undoToast = useTasksStore((state) => state.undoToast);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { logout, user } = useAuth();
@@ -34,6 +40,17 @@ export default function Index() {
 
   const handleTaskCreate = (newTask: ITask) => {
     updateTasks([newTask, ...tasks]);
+  };
+
+  const handleTaskDelete = (taskId: string) => {
+    scheduleDelete(taskId);
+  };
+
+  const handleUndoDelete = async () => {
+    if (undoToast.taskId) {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      undoDelete(undoToast.taskId);
+    }
   };
 
   // Separate completed and incomplete tasks
@@ -147,6 +164,7 @@ export default function Index() {
                   key={item.$id}
                   todo={item}
                   onToggle={handleTodoToggle}
+                  onDelete={handleTaskDelete}
                 />
               ))
             ) : (
@@ -177,12 +195,21 @@ export default function Index() {
                   key={item.$id}
                   todo={item}
                   onToggle={handleTodoToggle}
+                  onDelete={handleTaskDelete}
                 />
               ))}
             </Animated.View>
           )}
         </ScrollView>
         <CreateTodo onTaskCreate={handleTaskCreate} />
+        <Toast
+          visible={undoToast.visible}
+          message={`"${undoToast.taskTitle}" deleted`}
+          actionText="Undo"
+          onAction={handleUndoDelete}
+          onDismiss={hideUndoToast}
+          duration={4000}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

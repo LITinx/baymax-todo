@@ -120,3 +120,18 @@ export async function updateTask(
     return false;
   }
 }
+
+// 5. Delete task
+export async function deleteTask(taskId: string): Promise<boolean> {
+  try {
+    await tableDB.deleteRow({
+      databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
+      tableId: "tasks",
+      rowId: taskId,
+    });
+    return true;
+  } catch (err) {
+    console.error("Failed to delete task:", err);
+    return false;
+  }
+}
